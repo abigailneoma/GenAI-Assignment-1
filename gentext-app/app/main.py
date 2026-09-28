@@ -30,11 +30,6 @@ class EmbeddingRequest(BaseModel):
     word: str
 
 
-class SimilarityRequest(BaseModel):
-    word1: str
-    word2: str
-
-
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -50,9 +45,3 @@ def generate_text(request: TextGenerationRequest):
 def calculate_embedding(request: EmbeddingRequest):
     vector = nlp(request.word).vector
     return {"word": request.word, "dimensions": len(vector), "embedding": vector.tolist()}
-
-
-@app.post("/similarity")
-def calculate_similarity(request: SimilarityRequest):
-    similarity = nlp(request.word1).similarity(nlp(request.word2))
-    return {"word1": request.word1, "word2": request.word2, "similarity": float(similarity)}
