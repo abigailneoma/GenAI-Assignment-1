@@ -19,7 +19,7 @@ WORKDIR /code
 # Copy the pyproject.toml and uv.lock files
 COPY pyproject.toml uv.lock /code/
 
-# Install dependencies (including the spaCy en_core_web_lg model) using uv
+# Install dependencies (including the spaCy en_core_web_md model) using uv
 RUN uv sync --frozen
 
 # Copy the application code

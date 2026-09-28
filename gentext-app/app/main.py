@@ -6,8 +6,8 @@ from app.bigram_model import BigramModel
 
 app = FastAPI()
 
-# Large English model ships with 300-dimensional word vectors (Module 2)
-nlp = spacy.load("en_core_web_lg")
+# Medium English model ships with 300-dimensional word vectors (Module 2)
+nlp = spacy.load("en_core_web_md")
 
 # Sample corpus for the bigram model
 corpus = [

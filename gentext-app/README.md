@@ -1,6 +1,6 @@
 # gentext-app
 
-A FastAPI app that generates text with a bigram model and serves spaCy word embeddings (`en_core_web_lg`, 300 dimensions).
+A FastAPI app that generates text with a bigram model and serves spaCy word embeddings (`en_core_web_md`, 300 dimensions).
 
 ## Run with Docker
 
