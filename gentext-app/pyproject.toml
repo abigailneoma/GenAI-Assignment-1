@@ -1,0 +1,11 @@
+[project]
+name = "gentext-app"
+version = "0.1.0"
+description = "FastAPI bigram text generator with spaCy word embeddings"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "spacy>=3.8.0",
+    "en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl",
+]
