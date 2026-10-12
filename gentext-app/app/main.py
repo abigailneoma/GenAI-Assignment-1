@@ -1,8 +1,9 @@
 import spacy
-from fastapi import FastAPI
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.bigram_model import BigramModel
+from app.cnn_model import WEIGHTS_PATH, load_model, predict
 
 app = FastAPI()
 
@@ -19,6 +20,9 @@ corpus = [
 ]
 
 bigram_model = BigramModel(corpus)
+
+# CIFAR10 CNN classifier (Assignment 2); weights come from the training notebook
+cnn = load_model() if WEIGHTS_PATH.exists() else None
 
 
 class TextGenerationRequest(BaseModel):
@@ -45,3 +49,13 @@ def generate_text(request: TextGenerationRequest):
 def calculate_embedding(request: EmbeddingRequest):
     vector = nlp(request.word).vector
     return {"word": request.word, "dimensions": len(vector), "embedding": vector.tolist()}
+
+
+@app.post("/classify")
+async def classify_image(file: UploadFile = File(...)):
+    if cnn is None:
+        raise HTTPException(status_code=503, detail="Model weights not found")
+    try:
+        return predict(cnn, await file.read())
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read image")
