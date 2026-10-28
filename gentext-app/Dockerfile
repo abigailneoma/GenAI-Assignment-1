@@ -24,6 +24,7 @@ RUN uv sync --frozen
 
 # Copy the application code
 COPY ./app /code/app
+COPY ./helper_lib /code/helper_lib
 
 EXPOSE 8000
 
