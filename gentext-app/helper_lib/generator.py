@@ -37,3 +37,40 @@ def generate_png(model, num_samples=10, device='cpu'):
     buffer = io.BytesIO()
     Image.fromarray(array).save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def _to_png(images, num_samples):
+    # images in [-1, 1], shape (N, 3, H, W)
+    grid = make_grid((images.cpu() + 1) / 2, nrow=min(num_samples, 5), padding=2)
+    array = (grid.clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype("uint8")
+    buffer = io.BytesIO()
+    Image.fromarray(array).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def langevin_sample(model, x, steps=60, step_size=10.0, noise=0.005):
+    # Gradient descent on the energy, with a little noise at each step
+    model.eval()
+    for p in model.parameters():
+        p.requires_grad_(False)
+    x = x.clone().requires_grad_(True)
+    for _ in range(steps):
+        x.data.add_(noise * torch.randn_like(x))
+        x.data.clamp_(-1, 1)
+        grad = torch.autograd.grad(model(x).sum(), x)[0]
+        x.data.add_(-step_size * grad)
+        x.data.clamp_(-1, 1)
+    for p in model.parameters():
+        p.requires_grad_(True)
+    return x.detach()
+
+
+def generate_energy_png(model, num_samples=10, device='cpu', steps=200):
+    model.to(device)
+    start = torch.rand(num_samples, 3, 32, 32, device=device) * 2 - 1
+    return _to_png(langevin_sample(model, start, steps=steps), num_samples)
+
+
+def generate_diffusion_png(model, num_samples=10, device='cpu'):
+    model.to(device).eval()
+    return _to_png(model.sample(num_samples, device), num_samples)

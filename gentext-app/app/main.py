@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 from app.bigram_model import BigramModel
 from app.cnn_model import WEIGHTS_PATH, load_model, predict
-from helper_lib.generator import generate_png
-from helper_lib.model import Generator
+from helper_lib.generator import generate_diffusion_png, generate_energy_png, generate_png
+from helper_lib.model import DiffusionModel, EnergyModel, Generator
 from helper_lib.utils import load_model as load_weights
 
 app = FastAPI()
@@ -32,6 +32,12 @@ cnn = load_model() if WEIGHTS_PATH.exists() else None
 # MNIST GAN generator (Assignment 3); weights come from the training notebook
 GAN_WEIGHTS_PATH = Path(__file__).parent / "gan_mnist.pt"
 gan_generator = load_weights(Generator(), GAN_WEIGHTS_PATH) if GAN_WEIGHTS_PATH.exists() else None
+
+# CIFAR10 energy-based and diffusion models (Assignment 4); weights come from scripts/train_generative.py
+ENERGY_WEIGHTS_PATH = Path(__file__).parent / "energy_cifar10.pt"
+energy_model = load_weights(EnergyModel(), ENERGY_WEIGHTS_PATH) if ENERGY_WEIGHTS_PATH.exists() else None
+DIFFUSION_WEIGHTS_PATH = Path(__file__).parent / "diffusion_cifar10.pt"
+diffusion_model = load_weights(DiffusionModel(), DIFFUSION_WEIGHTS_PATH) if DIFFUSION_WEIGHTS_PATH.exists() else None
 
 
 class TextGenerationRequest(BaseModel):
@@ -75,3 +81,17 @@ def generate_digits(num_samples: int = Query(10, ge=1, le=64)):
     if gan_generator is None:
         raise HTTPException(status_code=503, detail="GAN weights not found")
     return Response(content=generate_png(gan_generator, num_samples), media_type="image/png")
+
+
+@app.get("/generate-energy")
+def generate_energy(num_samples: int = Query(5, ge=1, le=16), steps: int = Query(200, ge=1, le=1000)):
+    if energy_model is None:
+        raise HTTPException(status_code=503, detail="Energy model weights not found")
+    return Response(content=generate_energy_png(energy_model, num_samples, steps=steps), media_type="image/png")
+
+
+@app.get("/generate-diffusion")
+def generate_diffusion(num_samples: int = Query(5, ge=1, le=16)):
+    if diffusion_model is None:
+        raise HTTPException(status_code=503, detail="Diffusion model weights not found")
+    return Response(content=generate_diffusion_png(diffusion_model, num_samples), media_type="image/png")

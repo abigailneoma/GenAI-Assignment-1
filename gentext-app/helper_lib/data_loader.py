@@ -10,6 +10,15 @@ def get_data_loader(data_dir, batch_size=32, train=True, dataset="CIFAR10"):
             transforms.Normalize((0.5,), (0.5,)),
         ])
         data = datasets.MNIST(root=data_dir, train=train, download=True, transform=transform)
+    elif dataset == "CIFAR10_SIGNED":
+        # CIFAR10 scaled to [-1, 1] for the energy and diffusion models
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])
+        if train:
+            transform = transforms.Compose([transforms.RandomHorizontalFlip(), transform])
+        data = datasets.CIFAR10(root=data_dir, train=train, download=True, transform=transform)
     elif dataset == "CIFAR10":
         data = datasets.CIFAR10(root=data_dir, train=train, download=True, transform=transforms.ToTensor())
     else:
